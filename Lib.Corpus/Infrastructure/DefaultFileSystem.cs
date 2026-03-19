@@ -2,6 +2,10 @@ public class DefaultFileSystem : IFileSystem
 {
     public string ReadAllText(string path)
     {
+        if (path == null || path == " " || path == "")
+        {
+            throw new FileNotFoundException("Couldn't find directory");
+        }
         return File.ReadAllText(path);
     }
 
