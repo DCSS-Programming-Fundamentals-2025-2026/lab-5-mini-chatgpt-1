@@ -4,7 +4,7 @@ public class CorpusLoad : ICorpusLoader
     private readonly CorpusSplitter corpusSplitter;
     private readonly IFileSystem defaultFileSystem;
 
-    public CorpusLoad(CorpusTextNormalizer textNormalizer, CorpusSplitter corpusSplitter, DefaultFileSystem defaultFileSystem)
+    public CorpusLoad(CorpusTextNormalizer textNormalizer, CorpusSplitter corpusSplitter, IFileSystem defaultFileSystem)
     {
         this.textNormalizer = textNormalizer;
         this.corpusSplitter = corpusSplitter;
