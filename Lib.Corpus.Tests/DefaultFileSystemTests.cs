@@ -21,7 +21,6 @@ public class DefaultFileSystemTests
     {
         string expectedText = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau up";
         string actualText = fileSystem.ReadAllText(path);
-
         Assert.That(expectedText, Is.EqualTo(actualText));
     }
 
@@ -44,7 +43,6 @@ public class DefaultFileSystemTests
         string expectedMessage = "Couldn't find directory";
 
         FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => fileSystem.ReadAllText(path));
-
         Assert.That(expectedMessage, Is.EqualTo(ex.Message));
     }
 
@@ -52,7 +50,6 @@ public class DefaultFileSystemTests
     public void Exists_Success()
     {
         bool exists = fileSystem.Exists(path);
-
         Assert.That(exists, Is.True);
     }
 
@@ -61,7 +58,27 @@ public class DefaultFileSystemTests
     {
         path = "";
         bool exists = fileSystem.Exists(path);
-
         Assert.That(exists, Is.False);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

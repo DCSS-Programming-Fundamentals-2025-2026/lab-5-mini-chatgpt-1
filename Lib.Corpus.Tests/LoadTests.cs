@@ -1,54 +1,71 @@
-﻿namespace Lib.Corpus.Tests
+﻿
+
+namespace Lib.Corpus.Tests
 {
+    public class FakeFileSystem : IFileSystem
+    {
+        public bool FileExists { get; set; } = true;
+        public string FileContent { get; set; } = "";
+
+        public bool Exists(string path) => FileExists;
+        public string ReadAllText(string path) => FileContent;
+    }
+
     public class LoadTests
     {
-        private string path;
-        private string content;
         private CorpusLoader _loader;
+        private FakeFileSystem _fakeFileSystem;
         private CorpusLoadOptions _options;
+        private string _content;
 
         [SetUp]
         public void SetUp()
         {
             CorpusTextNormalizer normalizer = new CorpusTextNormalizer();
             CorpusSplitter splitter = new CorpusSplitter();
-            DefaultFileSystem fileSystem = new DefaultFileSystem();
+            _fakeFileSystem = new FakeFileSystem();
 
-            _loader = new CorpusLoader(normalizer, splitter, fileSystem);
+            _loader = new CorpusLoader(normalizer, splitter, _fakeFileSystem);
+
             _options = new CorpusLoadOptions();
+            _options.FallBack = "запасне значення";
 
-            path = "testFile.txt";
-            content = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau up";
-            File.WriteAllText(path, content);
+            _content = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau up";
         }
 
         [Test]
         public void LoadNormalSuccess()
         {
-            CorpusClass corpus = _loader.Load(path, _options);
+            _fakeFileSystem.FileExists = true;
+            _fakeFileSystem.FileContent = _content;
+
+            CorpusClass corpus = _loader.Load("dummy.txt", _options);
 
             Assert.That(corpus, Is.Not.Null);
-            Assert.That("gma tau up", Is.EqualTo(corpus.ValText));
+            Assert.That(corpus.ValText, Is.EqualTo("gma tau up"));
         }
 
         [Test]
-        public void LoadFail_PathIsNullOrNotExcist()
+        public void LoadFail_PathDoesNotExist()
         {
-            path = null;
+            _fakeFileSystem.FileExists = false;
 
-            CorpusClass corpus = _loader.Load(path, _options);
+            CorpusClass corpus = _loader.Load("dummy.txt", _options);
 
             Assert.That(corpus, Is.Not.Null);
-            Assert.That("запасне значення", Is.EqualTo(corpus.TrainText));
+            Assert.That(corpus.TrainText, Is.EqualTo("запасне значенн"));
         }
 
         [Test]
         public void LoadSuccess_OptionsIsNull()
         {
-            CorpusClass corpus = _loader.Load(path, _options);
+            _fakeFileSystem.FileExists = true;
+            _fakeFileSystem.FileContent = _content;
+
+            CorpusClass corpus = _loader.Load("dummy.txt", _options);
 
             Assert.That(corpus, Is.Not.Null);
-            Assert.That("gma tau up", Is.EqualTo(corpus.ValText));
+            Assert.That(corpus.ValText, Is.EqualTo("gma tau up"));
         }
     }
 }
