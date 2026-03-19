@@ -1,12 +1,17 @@
 public class CorpusSplitter
 {
-    public string[] Splitter(string path, double ValidateFraction)
+    public string[] Splitter(string text, double ValidateFraction)
     {
-        int Validate = (int)(path.Length * ValidateFraction);
-        int TrainPart = path.Length - Validate;
+        if (text == null || text == " " || text == "")
+        {
+            throw new NullReferenceException("Nothing to split here");
+        }
 
-        string TrainText = path.Substring(0, TrainPart);
-        string ValidatePart = path.Substring(TrainPart);
+        int Validate = (int)(text.Length * ValidateFraction);
+        int TrainPart = text.Length - Validate;
+
+        string TrainText = text.Substring(0, TrainPart);
+        string ValidatePart = text.Substring(TrainPart);
 
         string[] parts = { TrainText, ValidatePart };
         return parts;

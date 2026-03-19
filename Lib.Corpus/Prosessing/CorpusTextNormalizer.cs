@@ -1,8 +1,17 @@
 public class CorpusTextNormalizer
 {
-    public string  Normilize(bool Lowercase, string text)
+    public string Normalize(bool lowercase, string text)
     {
-        if (Lowercase) text = text.ToLower();
+        if (text == null)
+        {
+            throw new NullReferenceException("Nothing to normalize here");
+        }
+
+        if (lowercase == true)
+        {
+            text = text.ToLower();
+        }
+
         return text;
     }
 }
