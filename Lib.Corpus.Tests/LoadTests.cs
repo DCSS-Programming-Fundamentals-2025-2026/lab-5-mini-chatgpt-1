@@ -1,71 +1,98 @@
-﻿
+﻿namespace Lib.Corpus.Tests;
 
-namespace Lib.Corpus.Tests
+public class Fake : IFileSystem
 {
-    public class FakeFileSystem : IFileSystem
-    {
-        public bool FileExists { get; set; } = true;
-        public string FileContent { get; set; } = "";
+    public string? File { get; set; }
+    public bool ExistsFile { get; set; }
+    public string ReadAllText(string text) => File;
+    public bool Exists(string text) => ExistsFile;
+}
 
-        public bool Exists(string path) => FileExists;
-        public string ReadAllText(string path) => FileContent;
+public class Tests
+{
+    private CorpusLoader loader;
+    private Fake FakeFikeSystem;
+    private CorpusLoadOptions loadOptions;
+    private CorpusSplitter corpusSplitter;
+    private CorpusTextNormalizer corpusTextNormalizer;
+
+    [SetUp]
+    public void SetUp()
+    {
+        FakeFikeSystem = new Fake();
+        corpusSplitter = new CorpusSplitter();
+        corpusTextNormalizer = new CorpusTextNormalizer();
+
+        loader = new CorpusLoader(corpusTextNormalizer, corpusSplitter, FakeFikeSystem);
+        loadOptions = new CorpusLoadOptions();
     }
 
-    public class LoadTests
+
+    [Test]
+    public void ExistsingAndSplitCheck()
     {
-        private CorpusLoader _loader;
-        private FakeFileSystem _fakeFileSystem;
-        private CorpusLoadOptions _options;
-        private string _content;
+        // 10 символів, 10% валідації (1 символ)
+        loadOptions.FallBack = "0123456789";
 
-        [SetUp]
-        public void SetUp()
-        {
-            CorpusTextNormalizer normalizer = new CorpusTextNormalizer();
-            CorpusSplitter splitter = new CorpusSplitter();
-            _fakeFileSystem = new FakeFileSystem();
+        CorpusClass corpus = loader.Load("not existing File", loadOptions);
 
-            _loader = new CorpusLoader(normalizer, splitter, _fakeFileSystem);
+        Assert.That(corpus, Is.Not.Null);
+        Assert.That(corpus.TrainText, Is.EqualTo("012345678")); // 9 символів
+        Assert.That(corpus.ValText, Is.EqualTo("9"));           // 1 символ
+    }
 
-            _options = new CorpusLoadOptions();
-            _options.FallBack = "запасне значення";
 
-            _content = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau up";
-        }
+    [Test]
+    public void Check2_ExistingFile_LowerCaseFalse()
+    {
+        FakeFikeSystem.ExistsFile = true;
+        FakeFikeSystem.File = "ABCDEFGHIJ"; // 10 символів у верхньому регістрі
 
-        [Test]
-        public void LoadNormalSuccess()
-        {
-            _fakeFileSystem.FileExists = true;
-            _fakeFileSystem.FileContent = _content;
+        loadOptions.LowerCase = false;
+        loadOptions.ValidateFraction = 0.2;
 
-            CorpusClass corpus = _loader.Load("dummy.txt", _options);
+        CorpusClass corpus = loader.Load("notExisting.txt", loadOptions);
 
-            Assert.That(corpus, Is.Not.Null);
-            Assert.That(corpus.ValText, Is.EqualTo("gma tau up"));
-        }
+        Assert.That(corpus.TrainText, Is.EqualTo("ABCDEFGH"));  //8
+        Assert.That(corpus.ValText, Is.EqualTo("IJ"));    //2
+    }
 
-        [Test]
-        public void LoadFail_PathDoesNotExist()
-        {
-            _fakeFileSystem.FileExists = false;
+    [Test]
+    public void Check3_EmptyFileThrowsException()
+    {
+        FakeFikeSystem.ExistsFile = true;
+        FakeFikeSystem.File = ""; // Порожній файл
 
-            CorpusClass corpus = _loader.Load("dummy.txt", _options);
+        Assert.Throws<NullReferenceException>(() => loader.Load("empty.txt", loadOptions));
+    }
 
-            Assert.That(corpus, Is.Not.Null);
-            Assert.That(corpus.TrainText, Is.EqualTo("запасне значенн"));
-        }
+    [Test]
+    public void Load_OptionsAreNull_CreatesDefaultOptionsAndAppliesFallback()
+    {
+        FakeFikeSystem.ExistsFile = false; 
 
-        [Test]
-        public void LoadSuccess_OptionsIsNull()
-        {
-            _fakeFileSystem.FileExists = true;
-            _fakeFileSystem.FileContent = _content;
+        CorpusClass corpus = loader.Load("missing.txt", null);
 
-            CorpusClass corpus = _loader.Load("dummy.txt", _options);
-
-            Assert.That(corpus, Is.Not.Null);
-            Assert.That(corpus.ValText, Is.EqualTo("gma tau up"));
-        }
+        Assert.That(corpus, Is.Not.Null);
+        Assert.That(corpus.TrainText, Is.EqualTo("запасне значення"));
     }
 }
+        
+        
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
