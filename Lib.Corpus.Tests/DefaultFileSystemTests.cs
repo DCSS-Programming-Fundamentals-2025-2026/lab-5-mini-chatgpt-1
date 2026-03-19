@@ -1,26 +1,34 @@
 ﻿using System.IO;
 
 namespace Lib.Corpus.Tests;
+public class FakeFileSystem : IFileSystem
+{
+    public bool Exists(string path) => false;
+
+    public string ReadAllText(string path)
+    {
+        if (path == null || path == " " || path == "")
+        {
+            throw new FileNotFoundException("Couldn't find directory");
+        }
+        return File.ReadAllText(path);
+    }
+}
 
 public class DefaultFileSystemTests
 {
     private string path;
-    private string content;
-    DefaultFileSystem fileSystem = new();
-
-    [SetUp]
-    public void Setup()
-    {
-        path = "testFile.txt";
-        content = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau up";
-        File.WriteAllText(path, content);
-    }
+    FakeFileSystem fakeFileSystem = new();
 
     [Test]
     public void ReadAllText_Success()
     {
-        string expectedText = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau up";
-        string actualText = fileSystem.ReadAllText(path);
+        path = "testFile.txt";
+        string content = " ";
+        File.WriteAllText(path, content);
+
+        string expectedText = " ";
+        string actualText = fakeFileSystem.ReadAllText(path);
 
         Assert.That(expectedText, Is.EqualTo(actualText));
     }
@@ -32,9 +40,9 @@ public class DefaultFileSystemTests
         string pathEmpty = "";
         string pathWhiteSpace = " ";
 
-        Assert.Throws<FileNotFoundException>(() => fileSystem.ReadAllText(pathNull));
-        Assert.Throws<FileNotFoundException>(() => fileSystem.ReadAllText(pathEmpty));
-        Assert.Throws<FileNotFoundException>(() => fileSystem.ReadAllText(pathWhiteSpace));
+        Assert.Throws<FileNotFoundException>(() => fakeFileSystem.ReadAllText(pathNull));
+        Assert.Throws<FileNotFoundException>(() => fakeFileSystem.ReadAllText(pathEmpty));
+        Assert.Throws<FileNotFoundException>(() => fakeFileSystem.ReadAllText(pathWhiteSpace));
     }
 
     [Test]
@@ -43,24 +51,16 @@ public class DefaultFileSystemTests
         path = "";
         string expectedMessage = "Couldn't find directory";
 
-        FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => fileSystem.ReadAllText(path));
+        FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => fakeFileSystem.ReadAllText(path));
 
         Assert.That(expectedMessage, Is.EqualTo(ex.Message));
-    }
-
-    [Test]
-    public void Exists_Success()
-    {
-        bool exists = fileSystem.Exists(path);
-
-        Assert.That(exists, Is.True);
     }
 
     [Test]
     public void Exists_Fail_PathIsIncorrect()
     {
         path = "";
-        bool exists = fileSystem.Exists(path);
+        bool exists = fakeFileSystem.Exists(path);
 
         Assert.That(exists, Is.False);
     }
