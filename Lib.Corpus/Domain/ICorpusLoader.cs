@@ -1,4 +1,4 @@
 public interface ICorpusLoader
 {
-    Corpus Load(string path, CorpusLoadOptions options);
+    CorpusClass Load(string path, CorpusLoadOptions options);
 }
