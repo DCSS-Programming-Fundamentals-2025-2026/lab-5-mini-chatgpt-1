@@ -8,6 +8,12 @@ public class CorpusSplitter
         }
 
         int Validate = (int)(text.Length * ValidateFraction);
+
+        if (ValidateFraction <= 0 ||  ValidateFraction >= 1 || Math.Truncate((decimal)Validate) == 0 || Math.Truncate((decimal)(text.Length - Validate)) == 0)
+        {
+            throw new Exception("Incorrect validate fraction.");
+        }
+
         int TrainPart = text.Length - Validate;
 
         string TrainText = text.Substring(0, TrainPart);
